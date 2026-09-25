@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: ecommerce_source
+    database: ecommerce_db
+    schema: ecommerce_db
+    tables:
+      - name: raw_tiki_products
+        description: "Bảng dữ liệu thô cào từ Tiki được load vào Mysql"

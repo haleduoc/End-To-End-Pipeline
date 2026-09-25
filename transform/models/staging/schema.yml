@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: stg_tiki_products
+    description: "Bảng staging đã làm sạch từ tiki raw products"
+    columns:
+      - name: product_id
+        description: "Khóa chính sản phẩm"
+        tests:
+          - not_null
+      - name: price
+        description: "Giá bán hiện tại"
+        tests:
+          - not_null

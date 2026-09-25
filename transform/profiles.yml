@@ -1,0 +1,11 @@
+ecommerce_profile:
+  target: dev
+  outputs:
+    dev:
+      type: mysql
+      server: "{{env_var('mysql_host') }}"
+      port: "{{env_var('mysql_port') | as_number }}"
+      user: "{{env_var('mysql_user') }}"
+      password: "{{env_var('mysql_password') }}"
+      schema: "{{env_var('mysql_database') }}"
+      charset: utf8mb4
