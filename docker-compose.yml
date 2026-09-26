@@ -1,17 +1,76 @@
-version: "3.8"
+x-airflow-common: &airflow-common
+  build: .
+  environment:
+    - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+    # Kết nối nội bộ siêu tốc với Postgres trong Docker (độ trễ 0ms, không lo mạng lag)
+    - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+    - AIRFLOW__CORE__FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFfiuQUnKGvfLuW9E=
+    - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=true
+    - AIRFLOW__CORE__LOAD_EXAMPLES=false
+    # Các biến môi trường để pipeline đẩy dữ liệu lên Aiven Cloud MySQL
+    - mysql_host=${mysql_host}
+    - mysql_port=${mysql_port}
+    - mysql_user=${mysql_user}
+    - mysql_password=${mysql_password}
+    - mysql_database=${mysql_database}
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./extract:/opt/airflow/extract
+    - ./load:/opt/airflow/load
+    - ./transform:/opt/airflow/transform
+    - ./logs:/opt/airflow/logs
+    - ./.env:/opt/airflow/.env
+  depends_on:
+    postgres:
+      condition: service_healthy
+
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: ecommerce_db
-    restart: always
+  # 1. Database nội bộ của Airflow (Docker tự động pull, lưu bền vững vào ổ cứng qua volume postgres_data)
+  postgres:
+    image: postgres:13
+    container_name: airflow_postgres
     environment:
-      MYSQL_ROOT_PASSWORD: ${mysql_password}
-      MYSQL_DATABASE: ${mysql_database}
-      MYSQL_USER: ${mysql_user}
-      MYSQL_PASSWORD: ${mysql_password}
-    ports:
-      - "3306:3306"
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  # 2. Khởi tạo database và tạo tài khoản Admin
+  airflow-init:
+    <<: *airflow-common
+    container_name: airflow_init
+    command: >
+      bash -c "airflow db migrate &&
+               airflow users create --username admin --firstname Admin --lastname User --role Admin --email admin@example.com --password admin"
+    restart: on-failure
+
+  # 3. Giao diện Webserver
+  airflow-webserver:
+    <<: *airflow-common
+    container_name: airflow_webserver
+    restart: always
+    command: webserver
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  # 4. Bộ lập lịch chạy ngầm
+  airflow-scheduler:
+    <<: *airflow-common
+    container_name: airflow_scheduler
+    restart: always
+    command: scheduler
+
 volumes:
-  mysql_data:
+  postgres_data:

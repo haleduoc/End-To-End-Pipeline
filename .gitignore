@@ -5,3 +5,11 @@ __pycache__/
 .DS_Store
 extract/data/
 data/
+Readme(Transfrom).md
+Readme(Extract).md
+Readme(Load).md
+Readme(dags).md
+Readme(Visualization).md
+transform/target/
+transform/logs/
+transform/dbt_packages/

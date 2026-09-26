@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tiki Analytics Dashboard</title>
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Chart.js CDN (histogram only) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- SECTION 1: Header (Sticky) -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="header-logo-icon">🛒</div>
+      <div class="header-title-wrap">
+        <h1>Tiki Analytics</h1>
+        <p>End-to-End Data Pipeline · Aiven Cloud MySQL</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-badge" id="headerSummaryBadge">
+        <span class="badge-dot"></span>
+        <span id="headerSummaryText">Đang tải dữ liệu...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="dashboard-body">
+
+    <!-- SECTION 2: KPI Bar -->
+    <section class="section-kpi-bar">
+      <div class="kpi-card">
+        <div class="kpi-value" id="kpiTotalProducts">0</div>
+        <div class="kpi-label">📦 Total Products</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value" id="kpiTotalSellers">0</div>
+        <div class="kpi-label">🏪 Total Sellers</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value" id="kpiAvgPrice">0 ₫</div>
+        <div class="kpi-label">💰 Avg Price</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value" id="kpiAvgRating">0.0 ★</div>
+        <div class="kpi-label">⭐ Avg Rating</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value" id="kpiAvgDiscount">0.0%</div>
+        <div class="kpi-label">🏷️ Avg Discount</div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: Charts Row (2 columns, 55% / 45%) -->
+    <section class="section-charts-row">
+      <!-- Left: Top 10 Sellers (Inline SVG) -->
+      <div class="dash-card chart-card-left">
+        <div class="card-header">
+          <h2 class="card-title">Top 10 Sellers by Product Count</h2>
+          <span class="card-badge">Inline SVG</span>
+        </div>
+        <div class="svg-chart-container" id="svgChartWrapper">
+          <!-- Inline SVG rendered dynamically by script.js -->
+        </div>
+      </div>
+
+      <!-- Right: Price Distribution (Chart.js Histogram) -->
+      <div class="dash-card chart-card-right">
+        <div class="card-header">
+          <h2 class="card-title">Price Distribution</h2>
+          <span class="card-badge">Chart.js</span>
+        </div>
+        <div class="chartjs-container">
+          <canvas id="priceHistogramChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: Seller Cards Grid -->
+    <section class="section-sellers">
+      <div class="section-heading-row">
+        <h2 class="section-heading">Seller Performance</h2>
+        <span class="section-subtext" id="sellerCountSubtext">Top nhà bán hàng</span>
+      </div>
+      <div class="sellers-grid" id="sellersGrid">
+        <!-- Rendered dynamically by script.js -->
+      </div>
+    </section>
+
+    <!-- SECTION 5: Product Table -->
+    <section class="section-products">
+      <div class="dash-card">
+        <div class="card-header">
+          <h2 class="card-title">Product Explorer</h2>
+          <button class="btn-export-csv" id="btnExportCsv">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>⬇ Export CSV</span>
+          </button>
+        </div>
+
+        <!-- Inline Filter Bar -->
+        <div class="product-filter-bar">
+          <div class="filter-group search-input-group">
+            <input type="text" id="filterSearch" placeholder="🔍 Tìm theo tên sản phẩm..." class="form-input">
+          </div>
+          <div class="filter-group">
+            <select id="filterSeller" class="form-select">
+              <option value="">Tất cả người bán</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <select id="filterRating" class="form-select">
+              <option value="0">Rating: Tất cả</option>
+              <option value="3.0">Rating: Từ 3.0 ★</option>
+              <option value="3.5">Rating: Từ 3.5 ★</option>
+              <option value="4.0">Rating: Từ 4.0 ★</option>
+              <option value="4.5">Rating: Từ 4.5 ★</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Product Table Responsive Wrapper -->
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width: 32%;">Product Name</th>
+                <th style="width: 13%;">Price (₫)</th>
+                <th style="width: 13%;">Original Price (₫)</th>
+                <th style="width: 10%;">Discount %</th>
+                <th style="width: 12%;">Rating</th>
+                <th style="width: 8%;">Reviews</th>
+                <th style="width: 12%;">Seller</th>
+              </tr>
+            </thead>
+            <tbody id="productTableBody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Bar -->
+        <div class="pagination-bar">
+          <span class="pagination-info" id="paginationInfo">Showing 0–0 of 0 products</span>
+          <div class="pagination-actions">
+            <button class="btn-page" id="btnPrevPage">Prev</button>
+            <span class="current-page-num" id="currentPageNum">1</span>
+            <button class="btn-page" id="btnNextPage">Next</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SECTION 6: Footer -->
+  <footer class="app-footer">
+    <p>Data sourced from Tiki API · Processed by Apache Airflow + dbt · Stored on Aiven Cloud MySQL</p>
+  </footer>
+
+  <!-- Script File (Inlined by app.py) -->
+  <script src="script.js"></script>
+</body>
+</html>

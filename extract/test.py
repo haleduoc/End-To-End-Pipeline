@@ -4,9 +4,9 @@ import time
 import json
 from datetime import datetime, timezone
 import os
-# ETL/ ELT
+# ELT
 
-# # Step 1 : gọi thử api tiki & kiểm tra kết nối
+# Step 1 : gọi thử api tiki & kiểm tra kết nối
 
 # URL lấy danh sách sản phẩm điện thoại - máy tính bảng
 url = "https://tiki.vn/api/personalish/v1/blocks/listings"
@@ -25,16 +25,17 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
 # respone.json() trả về chuỗi JSON. Hàm .join() parse nó thành Python dic
-respone = requests.get(url, params=params, headers=headers)
+response = requests.get(url, params=params, headers=headers)
+
 # Dùng .get("data", []) thay vì data["data"] để phòng th API trả về lỗi
 # hoặc thay đổi cấu trúc, code sẽ k bị crash KeyError
-
-print(f"Status Code: {respone.status_code}")
-data = respone.json()
+print(f"Status Code: {response.status_code}")
+data = response.json()
 products = data.get("data", [])
 print(f"Lấy thành công {len(products)} sản phẩm")
 if products:
-    print(f"Sản phẩm đầu tiên: {products[0].get('name')} - Giá: {products[0].get('price')}VND")
+    print(f"Sản phẩm đầu tiên: {products[0].get('name')} - Gía: {products[0].get('price')}VNĐ")
+
 # Step 2: Chuẩn hoá dữ liệu thô (Schema Parsing)
 
 # Concept: Mỗi sản phẩm -> trả về API có tới 50+ trường tt khác nhau
@@ -44,7 +45,7 @@ if products:
 # Cập nhật lại tiki.py để chuẩn hoá cấu trúc và dữ liệu
 
 # Hàm parse_product -> sản phẩm dưới dạng dic
-def parse_respone(item: dict) -> dict:
+def parse_product(item: dict) -> dict:
     return {
         "product_id": item.get("id"),
         "name": item.get("name"),
@@ -58,7 +59,7 @@ def parse_respone(item: dict) -> dict:
     "extracted_at": datetime.now(timezone.utc).isoformat()
     }
 # fetch_product -> fetch từ url để lấy sản phẩm
-def fetch_product(category_id: int = 1789, page = 1, limit: int = 10) -> list[dict]:
+def fetch_products(category_id: int = 1789, page = 1, limit: int = 10) -> list[dict]:
     url = "https://tiki.vn/api/personalish/v1/blocks/listings"
     params = {
         "category": category_id,
@@ -70,11 +71,14 @@ def fetch_product(category_id: int = 1789, page = 1, limit: int = 10) -> list[di
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     "Accept": "application/json, text/plain, */*"
     }
+
     # Lấy từ hàm requests -> như người thật tránh bị quét từ BOT
-    respone = requests.get(url, params=params, headers=headers)
-    respone.raise_for_status() # Báo lỗi nếu HTTPS status != 200
-    raw_products = respone.json().get("data", [])
-    return [parse_respone(p) for p in raw_products]
+    respone = requests.get(url, params = params, headers = headers)
+    respone.raise_for_status() # Báo lỗi nếu HTTP status != 200
+
+    raw_product = respone.json().get("data", [])
+    return [parse_product(p) for p in raw_product]
+
 # Step 3: Phân trang (Pagination) & chống bị chặn IP (Rate Limiting)
 
 # Concept: thực tế, 1 danh mục có hàng ngàn sản phẩm chia làm nhiều trang
@@ -85,9 +89,9 @@ def extract_category(category_id: int = 1789, max_pages: int = 3) -> list[dict]:
     all_product = []
 
     for page in range(1, max_pages + 1):
-        print(f"Đang cào trang {page} / {max_pages}...")
+        print(f"Đang cào trang {page}/ {max_pages}...")
         try:
-            products = fetch_product(category_id=category_id, page=page, limit=10)
+            products = fetch_products(category_id=category_id, page=page, limit=10)
             if not products:
                 print("Đã hết sản phẩm")
                 break
@@ -96,9 +100,11 @@ def extract_category(category_id: int = 1789, max_pages: int = 3) -> list[dict]:
             # Nghỉ 1.5s tránh bị ban IP từ Tiki
             time.sleep(1.5)
         except Exception as e:
-            print(f"Lỗi khi cào trang {page} : {e}")
+            print(f"Lỗi khi cào trang {page}: {e}")
             break
+
     return all_product
+
 # Step 4: Metadata (Thời gian cào) & Landing Zone (Lưu file JSON)
 
 # Concept: giá spam sẽ biến thiên liên tục theo thời gian nên bắt buộc phải gắn mốc thời điểm
@@ -110,31 +116,24 @@ def extract_category(category_id: int = 1789, max_pages: int = 3) -> list[dict]:
     # ?extracted_at": datetime.now(timezone.utc).isoformat()
 
 # Hàm lưu dữ liệu vào Landing Zone(JSON thô)
-def save_to_json(data: list[dict], base_dir: str = "data"):
-    os.makedirs(base_dir, exist_ok=True)
-    
-    # 1. Lưu bản có timestamp để lưu trữ lịch sử (Data Lake/Landing Zone)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    history_file = os.path.join(base_dir, f"raw_product_{timestamp}.json")
-    with open(history_file, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    print(f"Đã lưu lịch sử vào: {history_file}")
+def save_to_json(data: list[dict], filepath: str = "data/raw_product.json"):
 
-    # 2. Lưu bản mới nhất cho load_mysql.py đọc
-    latest_file = os.path.join(base_dir, "raw_product.json")
-    with open(latest_file, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    print(f"Đã cập nhật bản mới nhất vào: {latest_file}")
+    # Tự động tạo thư mục cha nếu chưa có
+    os.makedirs(os.path.dirname(filepath), exist_ok = True)
 
+    # Mở File ghi với mã hoá utf-8
+    with open(filepath, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii = False, indent = 2)
+    print(f"Đã Lưu {len(data)} sản phẩm vào: {filepath}")
 
 if __name__ == "__main__":
     # Step 2:
-    products = fetch_product(category_id=1789, page=1, limit=5)
-    print(f"Bốc tách thành công {len(products)} sản phẩm")
+    products = fetch_products(category_id=1789, page=1, limit=5)
+    print(f"Bóc tách thành công {len(products)} sản phẩm: ")
     for p in products:
         print(p)
     # Step 3:
-    data = extract_category(category_id=1789, max_pages=3)
-    print(f"\nĐã cào được {len(data)} sản phẩm từ Tiki")
+    data = extract_category(category_id = 1789, max_pages = 3)
+    print(f"\nĐã cào được: {len(data)} sản phẩm từ Tiki")
     # Step 4:
     save_to_json(data)

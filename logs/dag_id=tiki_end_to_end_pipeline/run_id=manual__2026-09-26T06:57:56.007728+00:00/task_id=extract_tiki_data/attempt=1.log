@@ -1,0 +1,35 @@
+[2026-09-26T06:57:56.854+0000] {taskinstance.py:1956} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: tiki_end_to_end_pipeline.extract_tiki_data manual__2026-09-26T06:57:56.007728+00:00 [queued]>
+[2026-09-26T06:57:56.866+0000] {taskinstance.py:1956} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: tiki_end_to_end_pipeline.extract_tiki_data manual__2026-09-26T06:57:56.007728+00:00 [queued]>
+[2026-09-26T06:57:56.867+0000] {taskinstance.py:2170} INFO - Starting attempt 1 of 2
+[2026-09-26T06:57:56.884+0000] {taskinstance.py:2191} INFO - Executing <Task(BashOperator): extract_tiki_data> on 2026-09-26 06:57:56.007728+00:00
+[2026-09-26T06:57:56.890+0000] {standard_task_runner.py:60} INFO - Started process 262 to run task
+[2026-09-26T06:57:56.894+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'tiki_end_to_end_pipeline', 'extract_tiki_data', 'manual__2026-09-26T06:57:56.007728+00:00', '--job-id', '6', '--raw', '--subdir', 'DAGS_FOLDER/tiki_pipeline_dag.py', '--cfg-path', '/tmp/tmpon1c8deb']
+[2026-09-26T06:57:56.897+0000] {standard_task_runner.py:88} INFO - Job 6: Subtask extract_tiki_data
+[2026-09-26T06:57:56.961+0000] {task_command.py:423} INFO - Running <TaskInstance: tiki_end_to_end_pipeline.extract_tiki_data manual__2026-09-26T06:57:56.007728+00:00 [running]> on host c8bd5fc7dd9e
+[2026-09-26T06:57:57.032+0000] {taskinstance.py:2480} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='data_engineer' AIRFLOW_CTX_DAG_ID='tiki_end_to_end_pipeline' AIRFLOW_CTX_TASK_ID='extract_tiki_data' AIRFLOW_CTX_EXECUTION_DATE='2026-09-26T06:57:56.007728+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-09-26T06:57:56.007728+00:00'
+[2026-09-26T06:57:57.033+0000] {subprocess.py:63} INFO - Tmp dir root location: /tmp
+[2026-09-26T06:57:57.033+0000] {subprocess.py:75} INFO - Running command: ['/usr/bin/bash', '-c', 'cd /opt/***/extract && python tiki.py']
+[2026-09-26T06:57:57.042+0000] {subprocess.py:86} INFO - Output:
+[2026-09-26T06:58:02.670+0000] {subprocess.py:93} INFO - Status Code: 200
+[2026-09-26T06:58:02.672+0000] {subprocess.py:93} INFO - Lấy thành công 10 sản phẩm
+[2026-09-26T06:58:02.676+0000] {subprocess.py:93} INFO - Sản phẩm đầu tiên: Điện Thoại Samsung Galaxy A07 5G 4GB/128GB - Hàng Chính Hãng - Giá: 4999000VND
+[2026-09-26T06:58:02.678+0000] {subprocess.py:93} INFO - Bốc tách thành công 5 sản phẩm
+[2026-09-26T06:58:02.680+0000] {subprocess.py:93} INFO - {'product_id': 279418598, 'name': 'Điện Thoại Samsung Galaxy A07 5G 4GB/128GB - Hàng Chính Hãng', 'price': 4999000, 'original_price': 5890000, 'discount_rate': 15, 'rating_average': 0, 'review_count': 0, 'seller_name': None, 'extracted_at': '2026-09-26T06:57:57.490029+00:00'}
+[2026-09-26T06:58:02.683+0000] {subprocess.py:93} INFO - {'product_id': 279411794, 'name': 'Máy tính bảng Samsung Galaxy Tab A11 4G ( 4GB/64GB) - Hàng chính hãng', 'price': 4090000, 'original_price': 6990000, 'discount_rate': 41, 'rating_average': 0, 'review_count': 0, 'seller_name': None, 'extracted_at': '2026-09-26T06:57:57.490053+00:00'}
+[2026-09-26T06:58:02.684+0000] {subprocess.py:93} INFO - {'product_id': 279411764, 'name': 'Máy Tính Bảng Samsung Galaxy Tab A11 WiFi (4GB/64GB) - Hàng chính hãng', 'price': 5990000, 'original_price': 5990000, 'discount_rate': 0, 'rating_average': 5, 'review_count': 3, 'seller_name': None, 'extracted_at': '2026-09-26T06:57:57.490057+00:00'}
+[2026-09-26T06:58:02.686+0000] {subprocess.py:93} INFO - {'product_id': 279402741, 'name': 'Điện thoại Samsung Galaxy A07 5G (4GB/64GB) - Hàng chính hãng', 'price': 4690000, 'original_price': 4690000, 'discount_rate': 0, 'rating_average': 0, 'review_count': 0, 'seller_name': None, 'extracted_at': '2026-09-26T06:57:57.490061+00:00'}
+[2026-09-26T06:58:02.686+0000] {subprocess.py:93} INFO - {'product_id': 279314906, 'name': 'Điện thoại Xiaomi Redmi Note 15 Pro 8GB/256GB - Hàng Chính Hãng', 'price': 6990000, 'original_price': 6990000, 'discount_rate': 0, 'rating_average': 0, 'review_count': 0, 'seller_name': None, 'extracted_at': '2026-09-26T06:57:57.490067+00:00'}
+[2026-09-26T06:58:02.688+0000] {subprocess.py:93} INFO - Đang cào trang 1 / 3...
+[2026-09-26T06:58:02.690+0000] {subprocess.py:93} INFO - Trang 1: lấy được 10 sản phẩm
+[2026-09-26T06:58:02.691+0000] {subprocess.py:93} INFO - Đang cào trang 2 / 3...
+[2026-09-26T06:58:02.694+0000] {subprocess.py:93} INFO - Trang 2: lấy được 10 sản phẩm
+[2026-09-26T06:58:02.701+0000] {subprocess.py:93} INFO - Đang cào trang 3 / 3...
+[2026-09-26T06:58:02.703+0000] {subprocess.py:93} INFO - Trang 3: lấy được 10 sản phẩm
+[2026-09-26T06:58:02.707+0000] {subprocess.py:93} INFO - 
+[2026-09-26T06:58:02.710+0000] {subprocess.py:93} INFO - Đã cào được 30 sản phẩm từ Tiki
+[2026-09-26T06:58:02.712+0000] {subprocess.py:93} INFO - Đã lưu lịch sử vào: data/raw_product_20260926_065802.json
+[2026-09-26T06:58:02.713+0000] {subprocess.py:93} INFO - Đã cập nhật bản mới nhất vào: data/raw_product.json
+[2026-09-26T06:58:02.759+0000] {subprocess.py:97} INFO - Command exited with return code 0
+[2026-09-26T06:58:02.829+0000] {taskinstance.py:1138} INFO - Marking task as SUCCESS. dag_id=tiki_end_to_end_pipeline, task_id=extract_tiki_data, execution_date=20260926T065756, start_date=20260926T065756, end_date=20260926T065802
+[2026-09-26T06:58:02.928+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 0
+[2026-09-26T06:58:02.988+0000] {taskinstance.py:3280} INFO - 1 downstream tasks scheduled from follow-on schedule check

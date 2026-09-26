@@ -3,7 +3,6 @@
 # Dùng batch insert để đẩy toàn bộ danh sách sản phẩm trong một lần gọi
 # thay vì insert từng dòng, giúp giảm tải đáng kể cho đường truyền lên cloud
 
-from enum import EnumDict
 import os
 import json
 import pymysql
