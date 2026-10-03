@@ -2,9 +2,14 @@ venv/
 .env
 __pycache__/
 *.pyc
+**/.DS_Store
 .DS_Store
 extract/data/
 data/
+logs/
+*.log
 transform/target/
 transform/logs/
 transform/dbt_packages/
+transform/.user.yml
+**/.user.yml
